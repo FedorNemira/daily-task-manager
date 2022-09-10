@@ -4,12 +4,42 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test document</title>
+     <title>Centrifugo quick start</title>
 </head>
+<html>
+
+
 <body>
-    <h3>
-        {% block body %}
-        {% endblock %}
-    </h3>
+  <div id="counter">-</div>
+  <script src="https://unpkg.com/centrifuge@3.0.0/dist/centrifuge.js"></script>
+  <script type="text/javascript">
+    const container = document.getElementById('counter');
+
+    const centrifuge = new Centrifuge("ws://194.67.110.10:8000/connection/websocket", {
+      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZWRvcl9uZW1pcmEiLCJleHAiOjE2NjI5MTc4OTUsImlhdCI6MTY2MjMxMzA5NX0.h91Iz3xL8Kl_H3QxhVTTeGHBJjIS-hWsOK_4bWupjIE",
+    });
+
+    centrifuge.on('connecting', function (ctx) {
+      console.log(`connecting: ${ctx.code}, ${ctx.reason}`);
+    }).on('connected', function (ctx) {
+      console.log(`connected over ${ctx.transport}`);
+    }).on('disconnected', function (ctx) {
+      console.log(`disconnected: ${ctx.code}, ${ctx.reason}`);
+    }).connect();
+
+    const sub = centrifuge.newSubscription("channel");
+
+    sub.on('publication', function (ctx) {
+      container.innerHTML = ctx.data.value;
+      document.title = ctx.data.value;
+    }).on('subscribing', function (ctx) {
+      console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
+    }).on('subscribed', function (ctx) {
+      console.log('subscribed', ctx);
+    }).on('unsubscribed', function (ctx) {
+      console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
+    }).subscribe();
+  </script>
 </body>
+
 </html>
